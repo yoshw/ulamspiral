@@ -14,18 +14,21 @@
 import sys
 from math import sqrt
 from types import *
-from SimpleImage import clip, write_image, get_width, get_height
+from SimpleImage import write_image
 
-WHITE = (  0,  0,  0)
-BLACK = (255,255,255)
+BLACK = (  0,  0,  0)
+WHITE = (255,255,255)
 RED   = (255,  0,  0)
 GREEN = (  0,255,  0)
 BLUE  = (  0,  0,255)
 
+#dir  = (row offset, col offset)
 NORTH = (-1,0)
 WEST  = (0,-1)
-SOUTH = ( 1,0)
+SOUTH = (1, 0)
 EAST  = (0, 1)
+
+dirs  = [NORTH,WEST,SOUTH,EAST]
 
 ### FUNCTIONS ###
 
@@ -38,7 +41,11 @@ def prime_sieve(bound):
     assert type(bound) is IntType,\
             "upper bound is not an integer: {}".format(bound)
     list = [1] * bound
-    for i in range(2,int(sqrt(bound))):
+    # eliminate even numbers above 2
+    for i in range(3,bound,2):
+        list[i] = 0
+    # main sieve
+    for i in range(3,int(sqrt(bound))):
         if list[i-1]:
             for j in range(i**2,bound+1,2*i):
                 list[j-1] = 0
@@ -65,67 +72,63 @@ def spiral(image,size,lower,upper,primes):
         history.append([0]*size[1])
     location = (size[0]/2,size[1]/2)
     orientation = NORTH
-    if is_prime(lower,primes):
-        paintcell(image,location,WHITE)
+    paintcell(image,location,WHITE)
     history[location[0]][location[1]] = 1
     location = advance(location,orientation)
     for n in range(lower+1,upper+1):
         if is_prime(n,primes):
-            paintcell(image,location,RED)
+            paintcell(image,location,BLUE)
         history[location[0]][location[1]] = 1
         my_left = getleft(location,orientation)
-        if history[my_left[0]][my_left[1]] == 1:
+        if history[my_left[0]][my_left[1]] == 0:
             orientation = turnleft(orientation)
         location = advance(location,orientation)
-        print("{} {}".format(location[0],location[1]))
 
 def paintcell(image,location,colour):
     image[location[0]][location[1]] = colour
 
 def advance(location,orientation):
-    xoffset = orientation[0]
-    yoffset = orientation[1]
-    return (location[0]+xoffset,location[1]+yoffset)
+    rowoffset = orientation[0]
+    coloffset = orientation[1]
+    return (location[0]+rowoffset,location[1]+coloffset)
 
 def turnleft(orientation):
-    if orientation==NORTH:
-        return WEST
-    elif orientation==WEST:
-        return SOUTH
-    elif orientation==SOUTH:
-        return EAST
-    elif orientation==EAST:
-        return NORTH
+    index = (dirs.index(orientation)+1)%4
+    return dirs[index]
 
 def getleft(location,orientation):
-    xoffset = orientation[1]
-    yoffset = orientation[0]
-    return (location[0]+xoffset,location[1]+yoffset)
+    if orientation in [NORTH,SOUTH]:
+        rowoffset = orientation[1]
+        coloffset = orientation[0]
+    else:
+        rowoffset = -(orientation[1])
+        coloffset = -(orientation[0])
+    return (location[0]+rowoffset,location[1]+coloffset)
     
 ### MAIN ###
+if __name__ == '__main__':
+    argc = len(sys.argv)
+    if not (2 <= argc <= 3):
+        print("ulamspiral: usage: python ulamspiral.py [lower] upper")
+        print("where 'lower' and 'upper' are integers.")
+        exit()
 
-argc = len(sys.argv)
-if not (2 <= argc <= 3):
-    print("ulamspiral: usage: python ulamspiral.py [lower] upper")
-    print("where 'lower' and 'upper' are integers.")
-    exit()
+    if argc == 3:
+        lower = int(sys.argv[1])
+        upper = int(sys.argv[2])
+    else:
+        lower = 1
+        upper = int(sys.argv[1])
 
-if argc == 3:
-    lower = int(sys.argv[1])
-    upper = int(sys.argv[2])
-else:
-    lower = 1
-    upper = int(sys.argv[1])
+    primes = prime_sieve(upper)
+    num_cells = upper - lower + 1
+    size = (int(sqrt(num_cells))+1,int(sqrt(num_cells))+1)
 
-primes = prime_sieve(upper)
-num_cells = upper - lower + 1
-size = (int(sqrt(num_cells))+1,int(sqrt(num_cells))+1)
+    image = []
+    for i in range(size[0]):
+        image.append([BLACK]*size[1])
 
-image = []
-for i in range(size[0]):
-    image.append([BLACK]*size[1])
+    spiral(image,size,lower,upper,primes)
 
-spiral(image,size,lower,upper,primes)
-
-write_image(image,"ulamspiral_{0}-{1}.png".format(lower,upper))
+    write_image(image,"ulamspiral_{0}-{1}.png".format(lower,upper))
 
