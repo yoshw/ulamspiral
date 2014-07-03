@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 #
 # A simple program for visualising Ulam's Spiral.
 # Makes use of PIL (via pillow) for generating computer graphics.
@@ -9,103 +9,122 @@
 #         http://ww2.cs.mu.oz.au/~bjpop/comp10001-2013s2/
 #         projects/proj2/SimpleImage.py
 #
-################################################################################
+###############################################################################
 
 import sys
 from math import sqrt
-from types import *
-from SimpleImage import write_image
+from SimpleImage import write_image, get_width, get_height
 
-BLACK = (  0,  0,  0)
-WHITE = (255,255,255)
-RED   = (255,  0,  0)
-GREEN = (  0,255,  0)
-BLUE  = (  0,  0,255)
 
-#dir  = (row offset, col offset)
-NORTH = (-1,0)
-WEST  = (0,-1)
-SOUTH = (1, 0)
-EAST  = (0, 1)
+### CONSTANTS #################################################################
 
-dirs  = [NORTH,WEST,SOUTH,EAST]
+#         Red  Grn  Blu
+BLACK = (   0,   0,   0)
+WHITE = ( 255, 255, 255)
+RED =   ( 255,   0,   0)
+GREEN = (   0, 255,   0)
+BLUE =  (   0,   0, 255)
 
-### FUNCTIONS ###
+#        row offset  col offset
+NORTH = (        -1,          0)
+WEST =  (         0,         -1)
+SOUTH = (         1,          0)
+EAST =  (         0,          1)
+
+
+### FUNCTIONS #################################################################
 
 def prime_sieve(bound):
     '''
-    An implementation of the Sieve of Eratosthenes for
-    generating a list of all the prime numbers up to
+    An implementation of the Sieve of Eratosthenes:
+    generates a list of all the prime numbers up to
     some bounding value.
     '''
-    assert type(bound) is IntType,\
-            "upper bound is not an integer: {}".format(bound)
-    list = [1] * bound
-    # eliminate even numbers above 2
-    for i in range(3,bound,2):
+    try:
+        list = [1] * bound
+    except:
+        print("Error: upper bound is not an integer: {}".format(bound))
+
+    # sieve even numbers greater than 2
+    for i in range(3, bound, 2):
         list[i] = 0
-    # main sieve
-    for i in range(3,int(sqrt(bound))):
+    # sieve remaining composites
+    for i in range(3, int(sqrt(bound))):
         if list[i-1]:
-            for j in range(i**2,bound+1,2*i):
+            for j in range(i**2, bound+1, 2*i):
                 list[j-1] = 0
     return list
+
 
 def is_prime(n, prime_list):
     '''
     Tests an integer for primality, assuming a list
     of primes has already been generated in which
-    primes[n] evaluates to True if n is prime.
+    primes[n-1] evaluates to True if n is prime.
     '''
-    assert type(n) is IntType,\
-            "cannot test primality of non-integer: {}".format(n)
-    assert type(prime_list) is ListType,\
-            "not a list: {}".format(prime_list)
-    if prime_list[n-1]:
-        return True
-    else:
-        return False
+    try:
+        test = prime_list[n-1]
+    except TypeError:
+        print("Error: invalid input to is_prime() function")
 
-def spiral(image,size,lower,upper,primes):
-    history = []
-    for i in range(size[0]):
-        history.append([0]*size[1])
-    location = (size[0]/2,size[1]/2)
-    orientation = NORTH
-    paintcell(image,location,WHITE)
-    history[location[0]][location[1]] = 1
-    location = advance(location,orientation)
-    for n in range(lower+1,upper+1):
-        if is_prime(n,primes):
-            paintcell(image,location,BLUE)
-        history[location[0]][location[1]] = 1
-        my_left = getleft(location,orientation)
-        if history[my_left[0]][my_left[1]] == 0:
-            orientation = turnleft(orientation)
-        location = advance(location,orientation)
+    return bool(test)
 
-def paintcell(image,location,colour):
-    image[location[0]][location[1]] = colour
 
-def advance(location,orientation):
-    rowoffset = orientation[0]
-    coloffset = orientation[1]
-    return (location[0]+rowoffset,location[1]+coloffset)
+def spiral(image, lower, upper, primes):
+    height = get_height(image)
+    width = get_width(image)
 
-def turnleft(orientation):
-    index = (dirs.index(orientation)+1)%4
+    # make a new two-dimensional list, equal in size
+    # to the image, to record which pixels the spiral
+    # has already visited
+    trail = [[0]*width for _i in range(height)]
+    # initialise spiral
+    row, col = (height/2, width/2)
+    orientn = NORTH
+    # paint initial cell (and record that the spiral
+    # was here, then move to second cell
+    paintcell(image, row, col, WHITE)
+    trail[row][col] = 1
+    row, col = advance(row, col, orientn)
+
+    for n in range(lower+1, upper+1):
+        if is_prime(n, primes):
+            paintcell(image, row, col, BLUE)
+        trail[row][col] = 1
+        lrow, lcol = getleft(row, col, orientn)
+        if trail[lrow][lcol] == 0:
+            orientn = turnleft(orientn)
+        row, col = advance(row, col, orientn)
+
+
+def paintcell(image, row, col, colour):
+    image[row][col] = colour
+
+
+def advance(row, col, orientn):
+    rowoffset = orientn[0]
+    coloffset = orientn[1]
+    return row + rowoffset, col + coloffset
+
+
+def turnleft(orientn):
+    dirs = [NORTH, WEST, SOUTH, EAST]
+    index = (dirs.index(orientn) + 1) % 4
     return dirs[index]
 
-def getleft(location,orientation):
-    if orientation in [NORTH,SOUTH]:
-        rowoffset = orientation[1]
-        coloffset = orientation[0]
+
+def getleft(row, col, orientn):
+    if orientn in [NORTH, SOUTH]:
+        rowoffset = orientn[1]
+        coloffset = orientn[0]
     else:
-        rowoffset = -(orientation[1])
-        coloffset = -(orientation[0])
-    return (location[0]+rowoffset,location[1]+coloffset)
-    
-### MAIN ###
+        rowoffset = -(orientn[1])
+        coloffset = -(orientn[0])
+    return row + rowoffset, col + coloffset
+
+
+### MAIN #################################################################
+
 if __name__ == '__main__':
     argc = len(sys.argv)
     if not (2 <= argc <= 3):
@@ -122,13 +141,10 @@ if __name__ == '__main__':
 
     primes = prime_sieve(upper)
     num_cells = upper - lower + 1
-    size = (int(sqrt(num_cells))+1,int(sqrt(num_cells))+1)
+    width = height = int(sqrt(num_cells)) + 1
 
-    image = []
-    for i in range(size[0]):
-        image.append([BLACK]*size[1])
+    image = [[BLACK]*width for _i in range(height)]
 
-    spiral(image,size,lower,upper,primes)
+    spiral(image, lower, upper, primes)
 
-    write_image(image,"ulamspiral_{0}-{1}.png".format(lower,upper))
-
+    write_image(image, "ulamspiral_{0}-{1}.png".format(lower, upper))
