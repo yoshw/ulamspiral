@@ -1,18 +1,51 @@
 ###############################################################################
 #
-# A simple program for visualising Ulam's Spiral.
-# Makes use of PIL (via pillow) for generating computer graphics.
+# ::: ULAMSPIRAL :::
 #
 # AUTHOR: Yoshua Wakeham
 #
-#    - SimpleImage (by Bernie Pope)
-#         http://ww2.cs.mu.oz.au/~bjpop/comp10001-2013s2/
-#         projects/proj2/SimpleImage.py
+#    Yoshua Wakeham
+#        email: yoshwakeham@gmail.com
+#        www  : github.com/yoshw
+#        tweet: @yoshw
+#
+#    SimpleImage module by Bernie Pope, 2012
+#        http://ww2.cs.mu.oz.au/~bjpop/comp10001-2013s2/
+#        projects/proj2/SimpleImage.py
+#
+# DATE CREATED
+#
+#    3 July 2014
+#
+# NOTES
+#
+#    Ulamspiral is a simple program for generating Ulam spirals.
+#    (See https://en.wikipedia.org/wiki/Ulam_spiral)
+#
+#    It makes use of PIL (via Bernie Pope's SimpleImage) to output
+#    a PNG file wherein each pixel represents an integer determined
+#    by the 'spiralling' Ulam pattern. If the integer is prime, the
+#    pixel is coloured; otherwise it is black.
+#
+# COPYING
+#
+#    This program is free software: you can redistribute it
+#    and/or modify it under the terms of the GNU General Public
+#    License as published by the Free Software Foundation, either
+#    version 3 of the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
 
 import sys
-from math import sqrt
+import code.pymodules.primes as prm
 from SimpleImage import write_image, get_width, get_height
 
 
@@ -88,7 +121,7 @@ def spiral(image, lower, upper, primes):
     row, col = advance(row, col, orientn)
 
     for n in range(lower+1, upper+1):
-        if is_prime(n, primes):
+        if prm.is_sieved_prime(n, primes):
             paintcell(image, row, col, BLUE)
         trail[row][col] = 1
         lrow, lcol = getleft(row, col, orientn)
@@ -139,7 +172,7 @@ if __name__ == '__main__':
         lower = 1
         upper = int(sys.argv[1])
 
-    primes = prime_sieve(upper)
+    primes = prm.prime_sieve(upper)
     num_cells = upper - lower + 1
     width = height = int(sqrt(num_cells)) + 1
 
