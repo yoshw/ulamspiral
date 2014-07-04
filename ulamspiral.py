@@ -45,8 +45,9 @@
 ###############################################################################
 
 import sys
-import code.pymodules.primes as prm
-from SimpleImage import write_image, get_width, get_height
+import primes.primes as prm
+from math import sqrt
+from SimpleImage.SimpleImage import write_image, get_width, get_height
 
 
 ### CONSTANTS #################################################################
@@ -66,42 +67,6 @@ EAST =  (         0,          1)
 
 
 ### FUNCTIONS #################################################################
-
-def prime_sieve(bound):
-    '''
-    An implementation of the Sieve of Eratosthenes:
-    generates a list of all the prime numbers up to
-    some bounding value.
-    '''
-    try:
-        list = [1] * bound
-    except:
-        print("Error: upper bound is not an integer: {}".format(bound))
-
-    # sieve even numbers greater than 2
-    for i in range(3, bound, 2):
-        list[i] = 0
-    # sieve remaining composites
-    for i in range(3, int(sqrt(bound))):
-        if list[i-1]:
-            for j in range(i**2, bound+1, 2*i):
-                list[j-1] = 0
-    return list
-
-
-def is_prime(n, prime_list):
-    '''
-    Tests an integer for primality, assuming a list
-    of primes has already been generated in which
-    primes[n-1] evaluates to True if n is prime.
-    '''
-    try:
-        test = prime_list[n-1]
-    except TypeError:
-        print("Error: invalid input to is_prime() function")
-
-    return bool(test)
-
 
 def spiral(image, lower, upper, primes):
     height = get_height(image)
