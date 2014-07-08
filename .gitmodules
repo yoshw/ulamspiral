@@ -1,0 +1,3 @@
+[submodule "primes"]
+	path = primes
+	url = git://github.com/yoshw/primes.git

@@ -20,12 +20,15 @@
 # NOTES
 #
 #    Ulamspiral is a simple program for generating Ulam spirals.
-#    (See https://en.wikipedia.org/wiki/Ulam_spiral)
+#    (See https://en.wikipedia.org/wiki/Ulam_spiral for details.)
 #
 #    It makes use of PIL (via Bernie Pope's SimpleImage) to output
 #    a PNG file wherein each pixel represents an integer determined
 #    by the 'spiralling' Ulam pattern. If the integer is prime, the
 #    pixel is coloured; otherwise it is black.
+#
+#    This code is designed to be run with Python 2.7x. It was
+#    written and tested on a MacBook Pro running OSX 10.9 Mavericks.
 #
 # COPYING
 #
@@ -47,7 +50,7 @@
 import sys
 import primes.primes as prm
 from math import sqrt
-from SimpleImage.SimpleImage import write_image, get_width, get_height
+from SimpleImage.SimpleImage import write_image
 
 
 ### CONSTANTS #################################################################
@@ -69,8 +72,11 @@ EAST =  (         0,          1)
 ### FUNCTIONS #################################################################
 
 def spiral(image, lower, upper, primes):
-    height = get_height(image)
-    width = get_width(image)
+    height = len(image)
+    if height == 0:
+        width = 0
+    else:
+        width = len(image[0])
 
     # make a new two-dimensional list, equal in size
     # to the image, to record which pixels the spiral
@@ -121,7 +127,7 @@ def getleft(row, col, orientn):
     return row + rowoffset, col + coloffset
 
 
-### MAIN #################################################################
+### MAIN ROUTINE #########################################################
 
 if __name__ == '__main__':
     argc = len(sys.argv)
@@ -136,6 +142,10 @@ if __name__ == '__main__':
     else:
         lower = 1
         upper = int(sys.argv[1])
+
+    if lower >= upper:
+        print("error: lower bound must be strictly lower than upper bound")
+        exit()
 
     primes = prm.prime_sieve(upper)
     num_cells = upper - lower + 1
