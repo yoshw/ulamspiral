@@ -7,10 +7,14 @@ which are visualisations of patterns in the prime
 numbers. A lower and upper bound for the spiral
 may be specified; these bounds determine the
 range of integers whose primality will be
-visualised.
+visualised. Each pixel in the generated image
+represents an integer. If the integer is prime,
+the pixel will be coloured (blue, by default).
+Otherwise, the pixel will be black.
 
 The spirals are generated as PNG images,
-using PIL (via pillow).
+using PIL (via Bernie Pope's SimpleImage.py
+-- see module header for URL).
 
 ## Usage
 
@@ -22,7 +26,8 @@ where LOWER and UPPER are both integers, with LOWER
 optional. If both bounds are supplied, UPPER must be
 strictly greater than LOWER.
 
-Alternatively, `import ulamspiral` to access its functions.
+Alternatively, `import ulamspiral` within a Python
+module to access its functions.
 
 ## License
 
