@@ -1,4 +1,5 @@
-# Ulamspiral
+Ulamspiral
+==========
 
 ### What is it?
 
